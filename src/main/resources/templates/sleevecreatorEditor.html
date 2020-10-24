@@ -2,11 +2,8 @@
     <head>
         <title>Garantiefalls Sleeve Creator</title>
 		<th:block th:insert="fragments/header :: header"/>
-        <!-- CropperJS -->
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.9/cropper.min.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.9/cropper.min.css"/>
-        <!-- KonvaJS -->
-        <script src="https://unpkg.com/konva@7.0.3/konva.min.js" crossorigin="anonymous"></script>
+		<th:block th:insert="fragments/header :: cropper"/>
+		<th:block th:insert="fragments/header :: konvaJS"/>
 
         <link rel="stylesheet" th:href="@{/css/sleeve.css}"/>
     </head>
@@ -14,12 +11,178 @@
 	<nav th:replace="fragments/navbar :: navbar"></nav>
 
 	<main role="main" class="container">
+		<h3>Sleeve Creator</h3>
 		<!-- KONVA -->
-		<div class="starter-template border">
-			<div>[(${fileId})]</div>
-			<a th:href="@{/sleevecreator/getFile/} + '/' + ${fileId}">Link to File</a>
-			<img th:src="@{/sleevecreator/getFile/} + '/' + ${fileId}"/>
+		<div class="starter-template row">
+		<br/>
+			<div id="canvasDiv" ></div>
+			<div id="optionsDiv" class="px-2 py-2 border">
+				<div class="form-group">
+					<div class="form-inline col-md-6">
+						<label class="form-control-sm col-md-3" for="bgColor">BG Color</label>
+						<input class="form-control-sm col-md-5" type="color" name="bgColor" id="bgColor"/>
+						<button class="form-control-sm btn btn-primary col-md-3 ml-1" name="bgColorBtn" id="bgColorBtn">Change</button>
+					</div>
+					<hr/>
+					<div class="form-inline">
+						<label class="form-control-sm col-md-2" for="borderWidth" max="120" min="0">Border Width</label>
+						<input class="form-control-sm col-md-1" type="number" name="borderWidth" id="borderWidth"/>
+						<label class="form-control-sm col-md-2" for="borderColorPicker">Border color</label>
+						<input class="form-control-sm col-md-1" type="color" name="borderColorPicker" id="borderColorPicker"/>
+						<button class="form-control-sm btn btn-primary col-md-2 ml-1" name="addBorderBtn" id="addBorderBtn">Add Border</button>
+						<button class="form-control-sm btn btn-secondary col-md-3 ml-1" name="removeBorderBtn" id="removeBorderBtn">Remove Borders</button>
+					</div>
+					<div class="form-inline pt-1">
+					</div>
+					<div class="form-inline pt-2">
+						<button class="form-control btn btn-primary col-md-12 ml-1" name="downloadBtn" id="downloadBtn">Download Sleeve</button>
+					</div>
+				</div>
+				<div>
+					<p align="left">
+						<span>You can drag your Image around and Zoom in/out with your mousewheel. </span>
+						<br/>
+						<span>Borders are layered, which means if you add a 6px width red border and then a 3px width black border, you'll get a 2 colored border.</span>
+					</p>
+				</div>
+			</div>
 		</div>
 	</main>
+	
+	<script>
+		const width = 295;
+	    const height = 430;
+	    
+		$(document).ready(function() {
+			const stage = new Konva.Stage({
+				container: 'canvasDiv',
+                width:width,
+                height:height,
+                fill:'red',
+			});
+			
+			const bgLayer = new Konva.Layer();
+			bgLayer.add(new Konva.Rect({
+				x:0,
+				y:0,
+				width:width,
+				height:height,
+				fill: 'gray',
+			}));			
+			stage.add(bgLayer);
+			stage.draw();
+			
+			$('#bgColorBtn').click(function() {
+				bgLayer.clear();
+				
+				var fillColor = $('#bgColor').val();
+				bgLayer.add(new Konva.Rect({
+					x:0,
+					y:0,
+					width:width,
+					height:height,
+					fill: fillColor,
+				}));	
+				
+				bgLayer.draw();
+			})
+			
+			const baseLayer = new Konva.Layer();
+			const borderLayer = new Konva.Layer();
+			var imageObj = new Image();
+            imageObj.src = '[(${#httpServletRequest.requestURI} + @{/getFile})]'
+            
+            imageObj.onload = function() {
+	            var konvaImage = new Konva.Image({
+	                x:0,
+	                y:0,
+	                image:imageObj,
+	                draggable: true,
+	                scalable: true,
+	                name: 'sleeveImage'
+	            });
+	            
+	            baseLayer.add(konvaImage);
+	            stage.add(baseLayer);
+	            
+	            baseLayer.batchDraw();
+            }
+            stage.draw();
+            
+            var scaleBy = 1.01;
+            baseLayer.on('wheel', e => {
+              e.evt.preventDefault();
+              var oldScale = baseLayer.scaleX();
+
+              var mousePointTo = {
+                x: stage.getPointerPosition().x / oldScale - baseLayer.x() / oldScale,
+                y: stage.getPointerPosition().y / oldScale - baseLayer.y() / oldScale
+              };
+
+              var newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+              baseLayer.scale({ x: newScale, y: newScale });
+
+              var newPos = {
+                x:
+                  -(mousePointTo.x - stage.getPointerPosition().x / newScale) *
+                  newScale,
+                y:
+                  -(mousePointTo.y - stage.getPointerPosition().y / newScale) *
+                  newScale
+              };
+              baseLayer.position(newPos);
+              baseLayer.batchDraw();
+            });
+            
+            
+            $('#addBorderBtn').click(function() {
+            	var strokeWidth = $('#borderWidth').val();
+            	var strokeColor = $('#borderColorPicker').val();
+            	
+            	console.log("LINES:" );
+            	console.log("Width: " + strokeWidth )
+            	console.log("Color: " + strokeColor)
+            	
+            	var w = strokeWidth/2;
+            	console.log("W: " + w)
+            	var topBorder = new Konva.Line({
+            		x:0,
+            		y:0,
+            		points: [0+w, 0+w,     295-w, 0+w,      295-w, 430-w,     0+w, 430-w,     0+w,0+w ],
+            		stroke: strokeColor,
+            		strokeWidth: strokeWidth,
+            		lineCap: 'round',
+            		lineJoint: 'round',
+            	});
+            	
+            	borderLayer.add(topBorder);
+            	borderLayer.draw();
+	            stage.add(borderLayer);
+	            
+            })
+            $('#removeBorderBtn').click(function() {
+            	borderLayer.removeChildren();
+            	borderLayer.remove();
+            	borderLayer.draw();
+            	stage.draw();
+            })
+            
+            $('#downloadBtn').click(function() {
+            	var dataURL = stage.toDataURL();
+            	downloadURI(dataURL, "custom_sleeve.jpg");
+            })
+            
+            // function from https://stackoverflow.com/a/15832662/512042
+		    function downloadURI(uri, name) {
+			    var link = document.createElement('a');
+			    link.download = name;
+			    link.href = uri;
+			    document.body.appendChild(link);
+			    link.click();
+			    document.body.removeChild(link);
+			    delete link;
+			}
+        });
+	</script>
 </body>
 </html>

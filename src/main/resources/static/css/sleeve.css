@@ -1,5 +1,17 @@
-#sleeveEditor {
+#canvasDiv {
     height:430px;
     width:295px;
-    border:1px solid black;
+    margin-right:10px
+}
+
+#optionsDiv {
+	width:750
+}
+
+#borderColorPicker {
+	width:120px;
+}
+
+label.form-control {
+	border:none;
 }
