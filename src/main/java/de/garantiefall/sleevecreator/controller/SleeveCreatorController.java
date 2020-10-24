@@ -19,6 +19,8 @@ import de.garantiefall.sleevecreator.entity.FileEntity;
 
 @Controller
 public class SleeveCreatorController {
+	@Autowired
+	private FileEntity fileEntity; 
 	
 	@GetMapping("/sleevecreator")
 	public String showSleevecreator() {
@@ -34,25 +36,22 @@ public class SleeveCreatorController {
 			fileEntity.setType(file.getContentType());
 			fileEntity.setData(file.getBytes());
 			
-//			fileRepository.save(fileEntity);
-			return "redirect:/sleevecreator/create/" + fileEntity.getId();
+			return "redirect:/sleevecreator/create";
 		}
 		return "redirect:/sleevecreator";
 	}
 	
-	@GetMapping("/sleevecreator/create/{id}")
-	public String showSleeveCreatorSite(@PathVariable("id") String id, Model model) {
-		model.addAttribute("fileId", id);
+	@GetMapping("/sleevecreator/create")
+	public String showSleeveCreatorSite(Model model) {
 		return "sleevecratorEditor";
 	}
 	
-	@GetMapping("/sleevecreator/getFile/{id}")
+	@GetMapping("/sleevecreator/getFile")
 	public byte[] getFile(@PathVariable("id") String id, HttpServletResponse response) {
-//		Optional<FileEntity> optFileEntity = fileRepository.findById(id);
-//		if(optFileEntity.isPresent()) {
-//			response.addHeader("Content-Type", optFileEntity.get().getType());
-//			return optFileEntity.get().getData();
-//		}
+		if(fileEntity.getData() != null && fileEntity.getData().length > 0) {
+			response.addHeader("Content-Type", fileEntity.getType());
+			return fileEntity.getData();
+		}
 		return null;
 	}
 }

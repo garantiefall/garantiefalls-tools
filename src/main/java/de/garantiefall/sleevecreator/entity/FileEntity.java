@@ -1,5 +1,10 @@
 package de.garantiefall.sleevecreator.entity;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+@Component
+@Scope("session")
 public class FileEntity {
 	private String id;
 	private String filename;
