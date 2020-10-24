@@ -1,10 +1,5 @@
 package de.garantiefall.sleevecreator.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 public class FileEntity {
 	private String id;
 	private String filename;
