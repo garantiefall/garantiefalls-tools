@@ -1,0 +1,25 @@
+<html xmlns:th="http://www.thymeleaf.org"> 	
+    <head>
+        <title>Garantiefalls Sleeve Creator</title>
+		<th:block th:insert="fragments/header :: header"/>
+        <!-- CropperJS -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.9/cropper.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.9/cropper.min.css"/>
+        <!-- KonvaJS -->
+        <script src="https://unpkg.com/konva@7.0.3/konva.min.js" crossorigin="anonymous"></script>
+
+        <link rel="stylesheet" th:href="@{/css/sleeve.css}"/>
+    </head>
+<body>
+	<nav th:replace="fragments/navbar :: navbar"></nav>
+
+	<main role="main" class="container">
+		<!-- KONVA -->
+		<div class="starter-template border">
+			<div>[(${fileId})]</div>
+			<a th:href="@{/sleevecreator/getFile/} + '/' + ${fileId}">Link to File</a>
+			<img th:src="@{/sleevecreator/getFile/} + '/' + ${fileId}"/>
+		</div>
+	</main>
+</body>
+</html>
