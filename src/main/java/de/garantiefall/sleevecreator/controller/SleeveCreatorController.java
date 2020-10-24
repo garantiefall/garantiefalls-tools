@@ -1,7 +1,6 @@
 package de.garantiefall.sleevecreator.controller;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
